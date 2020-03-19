@@ -19,6 +19,8 @@ items:
   kind: Job
   metadata:
     name: jaeger-performance-test-job
+    annotations:
+      "sidecar.jaegertracing.io/inject": "true"
     labels:
       app: jaeger-performance-test-job
       group: jaeger-performance-test
@@ -30,17 +32,6 @@ items:
           group: jaeger-performance-test
       spec:
         containers:
-        - image: ${IMAGE_JAEGER_AGENT}
-          imagePullPolicy: Always
-          args: ["--reporter.type=${REPORTER_TYPE}",
-                 "--reporter.${REPORTER_TYPE}.host-port=${JAEGER_COLLECTOR_HOST_PREFIX}${JAEGER_COLLECTOR_HOST}:${JAEGER_AGENT_COLLECTOR_PORT}",
-                 "--processor.jaeger-compact.server-queue-size=${JAEGER_AGENT_QUEUE_SIZE}",
-                 "--processor.jaeger-compact.workers=${JAEGER_AGENT_WORKERS}",
-                 "--metrics-backend=${METRICS_BACKEND}"]
-          name: jaeger-agent
-          ports:
-          - containerPort: 6831
-            protocol: UDP
         - image: ${IMAGE_PERFORMANCE_TEST}
           imagePullPolicy: Always
           name: jaeger-performance-test

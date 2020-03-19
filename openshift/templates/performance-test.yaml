@@ -19,8 +19,6 @@ items:
   kind: Job
   metadata:
     name: jaeger-performance-test-job
-    annotations:
-      "sidecar.jaegertracing.io/inject": "true"
     labels:
       app: jaeger-performance-test-job
       group: jaeger-performance-test
@@ -30,10 +28,24 @@ items:
         labels:
           app: jaeger-performance-test-job
           group: jaeger-performance-test
-        annotations:
-          "sidecar.jaegertracing.io/inject": "true"
       spec:
         containers:
+        - image: ${IMAGE_JAEGER_AGENT}
+          imagePullPolicy: Always
+          args:
+            - '--reporter.type=grpc'
+            - '--reporter.grpc.tls.enabled=true'
+            - '--reporter.grpc.tls.ca=/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt'
+            - '--reporter.grpc.tls.server-name=${JAEGER_SERVICE_NAME}-collector-headless.${OS_NAMESPACE}.svc.cluster.local'
+            - '--reporter.grpc.host-port=dns:///${JAEGER_SERVICE_NAME}-collector-headless.jkandasa:14250'
+            - '--metrics-backend=${METRICS_BACKEND}'
+            - '--processor.jaeger-compact.workers=${JAEGER_AGENT_WORKERS}'
+            - '--processor.jaeger-compact.server-queue-size=${JAEGER_AGENT_QUEUE_SIZE}'
+            - '--processor.jaeger-compact.workers=${JAEGER_AGENT_WORKERS}'
+          name: jaeger-agent
+          ports:
+          - containerPort: 6831
+            protocol: UDP
         - image: ${IMAGE_PERFORMANCE_TEST}
           imagePullPolicy: Always
           name: jaeger-performance-test

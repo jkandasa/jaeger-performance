@@ -30,6 +30,8 @@ items:
         labels:
           app: jaeger-performance-test-job
           group: jaeger-performance-test
+        annotations:
+          "sidecar.jaegertracing.io/inject": "true"
       spec:
         containers:
         - image: ${IMAGE_PERFORMANCE_TEST}
